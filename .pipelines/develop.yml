@@ -16,6 +16,10 @@ parameters:
     type: string
     displayName: "image version"
     default: "1.0.0"
+stages:
+  - template: templates/stages/versioncheck.yml
+  - ${{ if eq( parameters.variable_check, true ) }}:
+    - template: templates/stages/variablecheck.yml
 steps:
   # Step 1: Docker Login
   - script: |
@@ -44,7 +48,4 @@ steps:
       docker rmi $(dockerRegistry)/$(dockerImageName):$(dockerImageTag)
       docker system prune -f
     displayName: 'Docker Cleanup'
-stages:
-  - template: templates/stages/versioncheck.yml
-  - ${{ if eq( parameters.variable_check, true ) }}:
-    - template: templates/stages/variablecheck.yml
+
