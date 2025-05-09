@@ -2,7 +2,7 @@ jobs:
   - job: variablegitcheck
     displayName: "variablegitcheck"
     pool:
-      name: wsl
+      vmImage: 'ubuntu-latest'
     workspace:
       clean: all
     steps:

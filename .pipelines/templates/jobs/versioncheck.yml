@@ -2,7 +2,7 @@ jobs:
   - job: versioncheck
     displayName: "versioncheck"
     pool:
-      name: wsl
+       vmImage: 'ubuntu-latest'
     workspace:
       clean: all
     steps:

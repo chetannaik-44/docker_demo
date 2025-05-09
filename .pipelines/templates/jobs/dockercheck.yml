@@ -2,7 +2,7 @@ jobs:
   - job: variabledockercheck
     displayName: "variabledockercheck"
     pool:
-      name: wsl
+      vmImage: 'ubuntu-latest'
     workspace:
       clean: all
     steps:
