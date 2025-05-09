@@ -1,0 +1,15 @@
+jobs:
+  - job: variabledockercheck
+    displayName: "variabledockercheck"
+    pool:
+      name: wsl
+    workspace:
+      clean: all
+    steps:
+      - bash: |
+          echo "variable docker checking"
+          echo "GIT_USER: $GIT_USER"
+        displayName: "variable docker checking"
+        env:
+          GIT_USER: $(github_user)
+          DOCKER_USER: $(docker_user)

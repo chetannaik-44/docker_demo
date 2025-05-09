@@ -1,0 +1,5 @@
+stages:
+  - stage: version_checking
+    displayName: "version checking"
+    jobs:
+      - template: ../jobs/versioncheck.yml

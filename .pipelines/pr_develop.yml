@@ -1,0 +1,16 @@
+trigger: none
+pr: 
+  branches:
+    include:  
+    - main
+variables:
+  - group: default_credentials
+parameters:
+  - name: variable_check
+    type: boolean
+    displayName: "variable check default false"
+    default: false
+stages:
+  - template: templates/stages/versioncheck.yml
+  - ${{ if eq( parameters.variable_check, true ) }}:
+    - template: templates/stages/variablecheck.yml
