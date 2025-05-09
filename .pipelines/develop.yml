@@ -1,60 +1,40 @@
 trigger:
-  branches:
-    include:  
-      - main
+  - main  # Adjust to your default branch
+
+pool:
+  vmImage: 'ubuntu-latest'
 
 variables:
-  - group: default_credentials
-  - name: dockerRegistry
-    value: 'docker.io/chetannaik44'
-  - name: dockerImageName
-    value: 'demo'
-  - name: dockerImageTag
-    value: '$(Build.BuildId)'
+  dockerRegistry: 'docker.io/chetannaik44'
+  dockerImageName: 'demo'
+  dockerImageTag: '$(Build.BuildId)'
 
-parameters:
-  - name: variable_check
-    type: boolean
-    displayName: "variablecheck default false"
-    default: false
-  - name: version
-    type: string
-    displayName: "image version"
-    default: "1.0.0"
+steps:
+  # Step 1: Docker Login
+  - script: |
+      echo "$(DOCKER_PASSWORD)" | docker login $(dockerRegistry) --username "$(DOCKER_USERNAME)" --password-stdin
+    displayName: 'Docker Login'
+    env:
+      DOCKER_USERNAME: $(DOCKER_USERNAME)
+      DOCKER_PASSWORD: $(DOCKER_PASSWORD)
 
-stages:
-  - template: templates/stages/versioncheck.yml
-  - ${{ if eq(parameters.variable_check, true) }}:
-    - template: templates/stages/variablecheck.yml
-  - stage: BuildAndPush
-    displayName: Build and Push Docker Image
-    jobs:
-      - job: Build
-        displayName: Build Job
-        pool:
-          vmImage: 'ubuntu-latest'
-        steps:
-          - script: |
-              echo "$(DOCKER_PASSWORD)" | docker login $(dockerRegistry) --username "$(DOCKER_USERNAME)" --password-stdin
-            displayName: 'Docker Login'
-            env:
-              DOCKER_USERNAME: $(DOCKER_USERNAME)
-              DOCKER_PASSWORD: $(DOCKER_PASSWORD)
+  # Step 2: Docker Build
+  - script: |
+      docker build -t $(dockerRegistry)/$(dockerImageName):$(dockerImageTag) .
+    displayName: 'Docker Build'
 
-          - script: |
-              docker build -t $(dockerRegistry)/$(dockerImageName):$(dockerImageTag) .
-            displayName: 'Docker Build'
+  # Step 3: Docker Test
+  - script: |
+      docker run --rm $(dockerRegistry)/$(dockerImageName):$(dockerImageTag) echo "Running container test..."
+    displayName: 'Docker Test'
 
-          - script: |
-              docker run --rm $(dockerRegistry)/$(dockerImageName):$(dockerImageTag) echo "Running container test..."
-            displayName: 'Docker Test'
+  # Step 4: Docker Push
+  - script: |
+      docker push $(dockerRegistry)/$(dockerImageName):$(dockerImageTag)
+    displayName: 'Docker Push'
 
-          - script: |
-              docker push $(dockerRegistry)/$(dockerImageName):$(dockerImageTag)
-            displayName: 'Docker Push'
-
-          - script: |
-              docker rmi $(dockerRegistry)/$(dockerImageName):$(dockerImageTag)
-              docker system prune -f
-            displayName: 'Docker Cleanup'
-
+  # Step 5: Docker Cleanup
+  - script: |
+      docker rmi $(dockerRegistry)/$(dockerImageName):$(dockerImageTag)
+      docker system prune -f
+    displayName: 'Docker Cleanup'
